@@ -1,0 +1,67 @@
+---
+title: "Reproducible Research"
+author: "Sheetal"
+date: "2023-09-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+###This is a HTML output for the knit of the assingment in Reproducable research
+**To set the working directory of the extracted file dowloaded.**
+ setwd("C:/Users/Tejas/Desktop/datasciencecoursera/RepData_PeerAssessment1/activity")
+ #Load the data by using *read.csv* function 
+> Activity <- read.csv("activity.csv")
+> head(Activity,5)
+> activity$date <- as.POSIXct(activity$date, "%Y%m%d")
+> day <- weekdays(Activity$date)
+> Activity <- cbind(Activity, day)
+> summary(Activity)
+> activityTotalSteps <- with(Activity, aggregate(steps, by = list(date), sum, na.rm = TRUE))
+> names(activityTotalSteps) <- c("Date", "Steps")
+> totalStepsdf <- data.frame(activityTotalSteps)
+```
+
+## Including Plots
+**What is the mean total number of steps taken per day?**
+``> hist(x= totalStepsdf$Steps)`
+> mean(activityTotalSteps$Steps)
+[1] 9354.23
+> median(activityTotalSteps$Steps)
+[1] 10395
+```
+
+**What is the average daily activity pattern?**
+ >plot(averageActivitydf,type ="l", main = "Average Number of Steps Per Interval")
+ > averageDailyActivity[which.max(averageDailyActivity$Mean), ]$Interval
+[1] 835
+  
+##Computing Missing Values##
+> sum(is.na(Activity$steps))
+[1] 2304
+ activityImputed <- transform(Activity, 
++                              steps = ifelse(is.na(Activity$steps), yes = imputedSteps, no=Activity$steps))
+> totalActivityImputed <- aggregate(steps ~ date, activityImputed, sum)
+> names(totalActivityImputed) <- c("date", "dailySteps")
+> sum(is.na(totalActivityImputed$dailySteps))
+[1] 0
+> hist(totalActivityImputed$dailySteps)
+
+> mean(totalActivityImputed$dailySteps)
+[1] 10766.19
+> median(totalActivityImputed$dailySteps)
+[1] 10766.19
+> Activity$dayType <- sapply(Activity$date, function(x) {
+    if(weekdays(x) == "Saturday" | weekdays(x) == "Sunday")
+     {y <- "Weekend"}
+     else {y <- "Weekday"}
+     y
+ })
+ > activityByDay <-  aggregate(steps ~ interval + dayType, Activity, mean, na.rm = TRUE)
+
+
+##Are there differences in activity patterns between weekdays and weekends?##
+ > dayPlot <-  ggplot2::aes(activityByDay, aes(x = interval , y = steps, color = dayType))
+ 
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
